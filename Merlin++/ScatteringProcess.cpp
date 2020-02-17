@@ -66,23 +66,22 @@ void ScatterStuff(double dp, PSvector& p, double t, double E0)
 }
 
 // Rutherford
-void Rutherford::Configure(Material* matin, CrossSections* CSin)
-{
-	ScatteringProcess::Configure(matin, CSin);
-	tmin = 0.9982E-3; // DeMolaize thesis page 29 [GeV^2]
-	sigma = cs->Get_sig_R();
-	E0 = cs->Get_E0();
-}
+// deleted RJB
+//void Rutherford::Configure(Material* matin, CrossSections* CSin)
+//{
+//	ScatteringProcess::Configure(matin, CSin);
+//	tmin = 0.9982E-3; // DeMolaize thesis page 29 [GeV^2]
+//	sigma = cs->Get_sig_R();
+//	E0 = cs->Get_E0();
+//}
 
 bool Rutherford::Scatter(PSvector& p, double E) const
 {
-	double TargetMass = AtomicMassUnit * mat->GetAtomicMass();
-
+	double TargetMass = AtomicMassUnit * mat->A; //  mat->GetAtomicMass();
 	double t = tmin / (1 - RandomNG::uniform(0, 1));
-	ScatterStuff(p, t, TargetMass, E0);
-	p.type() = 6;
+	ScatterStuff(p, t, TargetMass, E);
 
-	double E3 = (1 + p.dp()) * E0;
+	double E3 = (1 + p.dp()) * E;
 	if(E3 <= 0.1)
 	{
 		return false;
@@ -94,20 +93,20 @@ bool Rutherford::Scatter(PSvector& p, double E) const
 }
 
 // ST Rutherford
-void SixTrackRutherford::Configure(Material* matin, CrossSections* CSin)
-{
-	ScatteringProcess::Configure(matin, CSin);
-	tmin = 0.9982E-3; // DeMolaize thesis page 29 [GeV^2]
-	sigma = cs->Get_sig_R();
-	E0 = cs->Get_E0();
-}
+// deleted RJB
+//void SixTrackRutherford::Configure(Material* matin, CrossSections* CSin)
+//{
+//	ScatteringProcess::Configure(matin, CSin);
+//	tmin = 0.9982E-3; // DeMolaize thesis page 29 [GeV^2]
+//	sigma = cs->Get_sig_R();
+//	E0 = cs->Get_E0();
+//}
 
 bool SixTrackRutherford::Scatter(PSvector& p, double E) const
 {
 
 	double t = tmin / (1 - RandomNG::uniform(0, 1));
 	ScatterStuff(p, t, E0);
-	p.type() = 6;
 
 	double E3 = (1 + p.dp()) * E0;
 	if(E3 <= 0.1)
@@ -121,18 +120,33 @@ bool SixTrackRutherford::Scatter(PSvector& p, double E) const
 }
 
 // Elastic pn
-void Elasticpn::Configure(Material* matin, CrossSections* CSin)
+// deleted RJB
+//void Elasticpn::Configure(Material* matin, CrossSections* CSin)
+//{
+//	ScatteringProcess::Configure(matin, CSin);
+//	sigma = cs->Get_sig_pn_el();
+//	E0 = cs->Get_E0();
+//}
+
+Elasticpn::Elasticpn(double Energy)
 {
-	ScatteringProcess::Configure(matin, CSin);
-	sigma = cs->Get_sig_pn_el();
-	E0 = cs->Get_E0();
+// Do pomeron stuff for elastic scattering
+	cout << " creating ppElasticScatter\n";
+	calculations = new ParticleTracking::ppElasticScatter(); // CHECK NEED DELETE
+	calculations->SetTMin(1e-4); // CHECK want to INCORPORATE ALL These
+	calculations->SetTMax(1.00);
+	calculations->SetStepSize(1e-4);
+	calculations->GenerateTDistribution(Energy);
+	sigma = calculations->GetElasticCrossSection();
+	cout << " Elastic cross section " << sigma << endl;
 }
+
 bool Elasticpn::Scatter(PSvector& p, double E) const
 {
-	double t = cs->GetElasticScatter()->SelectT();
+	double t = calculations->SelectT();
+	// double t = cs->GetElasticScatter()->SelectT();
 
 	ScatterStuff(p, t, AtomicMassUnit, E0);
-	p.type() = 3;
 
 	double E3 = (1 + p.dp()) * E0;
 	if(E3 <= 0.1)
@@ -146,12 +160,13 @@ bool Elasticpn::Scatter(PSvector& p, double E) const
 }
 
 // ST Elasticpn
-void SixTrackElasticpn::Configure(Material* matin, CrossSections* CSin)
-{
-	ScatteringProcess::Configure(matin, CSin);
-	sigma = cs->Get_sig_pn_el();
-	E0 = cs->Get_E0();
-}
+// deleted RJB
+//void SixTrackElasticpn::Configure(Material* matin, CrossSections* CSin)
+//{
+//	ScatteringProcess::Configure(matin, CSin);
+//	sigma = cs->Get_sig_pn_el();
+//	E0 = cs->Get_E0();
+//}
 bool SixTrackElasticpn::Scatter(PSvector& p, double E) const
 {
 	double com_sqd = 2 * ProtonMassMeV * MeV * E;   //ecmsq in SixTrack
@@ -159,7 +174,6 @@ bool SixTrackElasticpn::Scatter(PSvector& p, double E) const
 	double t = -log(RandomNG::uniform(0, 1)) / b_pp;
 
 	ScatterStuff(p, t, E0);
-	p.type() = 3;
 
 	double E3 = (1 + p.dp()) * E0;
 	if(E3 <= 0.1)
@@ -173,21 +187,21 @@ bool SixTrackElasticpn::Scatter(PSvector& p, double E) const
 }
 
 // Elastic pN
-void ElasticpN::Configure(Material* matin, CrossSections* CSin)
-{
-	ScatteringProcess::Configure(matin, CSin);
-	sigma = cs->Get_sig_pN_el();
-	double b_N_ref = matin->GetSixtrackNuclearSlope();
-	b_N = b_N_ref * (cs->Get_sig_pN_tot() / cs->Get_sig_pN_tot_ref());
-	E0 = cs->Get_E0();
-}
+// deleted RJB
+//void ElasticpN::Configure(Material* matin, CrossSections* CSin)
+//{
+//	ScatteringProcess::Configure(matin, CSin);
+//	sigma = cs->Get_sig_pN_el();
+//	double b_N_ref = matin->GetSixtrackNuclearSlope();
+//	b_N = b_N_ref * (cs->Get_sig_pN_tot() / cs->Get_sig_pN_tot_ref());
+//	E0 = cs->Get_E0();
+//}
 bool ElasticpN::Scatter(PSvector& p, double E) const
 {
-	double TargetMass = AtomicMassUnit * mat->GetAtomicMass();
+	double TargetMass = AtomicMassUnit * mat->A; // GetAtomicMass();
 
 	double t = -log(RandomNG::uniform(0, 1)) / b_N;
 	ScatterStuff(p, t, TargetMass, E0);
-	p.type() = 2;
 
 	double E3 = (1 + p.dp()) * E0;
 	if(E3 <= 0.1)
@@ -201,20 +215,20 @@ bool ElasticpN::Scatter(PSvector& p, double E) const
 }
 
 // ST Elastic pN
-void SixTrackElasticpN::Configure(Material* matin, CrossSections* CSin)
-{
-	ScatteringProcess::Configure(matin, CSin);
-	sigma = cs->Get_sig_pN_el();
-	double b_N_ref = matin->GetSixtrackNuclearSlope();
-	b_N = b_N_ref * (cs->Get_sig_pN_tot() / cs->Get_sig_pN_tot_ref());
-	E0 = cs->Get_E0();
-}
+// deleted RJB
+// void SixTrackElasticpN::Configure(Material* matin, CrossSections* CSin)
+//{
+//	ScatteringProcess::Configure(matin, CSin);
+//	sigma = cs->Get_sig_pN_el();
+//	double b_N_ref = matin->GetSixtrackNuclearSlope();
+//	b_N = b_N_ref * (cs->Get_sig_pN_tot() / cs->Get_sig_pN_tot_ref());
+//	E0 = cs->Get_E0();
+//}
 bool SixTrackElasticpN::Scatter(PSvector& p, double E) const
 {
 
 	double t = -log(RandomNG::uniform(0, 1)) / b_N;
 	ScatterStuff(p, t, E0);
-	p.type() = 2;
 
 	double E3 = (1 + p.dp()) * E0;
 	if(E3 <= 0.1)
@@ -228,22 +242,36 @@ bool SixTrackElasticpN::Scatter(PSvector& p, double E) const
 }
 
 // SD
-void SingleDiffractive::Configure(Material* matin, CrossSections* CSin)
+// deleted RJB
+//void SingleDiffractive::Configure(Material* matin, CrossSections* CSin)
+//{
+//	ScatteringProcess::Configure(matin, CSin);
+//	sigma = cs->Get_sig_pn_sd();
+//	E0 = cs->Get_E0();
+//}
+SingleDiffractive::SingleDiffractive(double Energy)
 {
-	ScatteringProcess::Configure(matin, CSin);
-	sigma = cs->Get_sig_pn_sd();
-	E0 = cs->Get_E0();
+// Do pomeron stuff for Diffraxctive scattering
+	calculations = new ParticleTracking::ppDiffractiveScatter();
+	calculations->SetTMin(0.0001);
+	calculations->SetTMax(4.0);
+	calculations->SetTStepSize(1e-4);
+	calculations->SetXiMin(pow(ProtonMassGeV + 0.135, 2) / (2 * ProtonMassGeV * Energy + Energy * Energy));
+	calculations->SetXiMax(0.12);
+	calculations->SetXiStepSize(1e-6);
+	calculations->GenerateDistribution(Energy);
+	sigma = calculations->GetDiffractiveCrossSection();
+	cout << "CHECK Diffractive cross section " << sigma << endl;
 }
 bool SingleDiffractive::Scatter(PSvector& p, double E) const
 {
-	std::pair<double, double> TM = cs->GetDiffractiveScatter()->Select();
+	std::pair<double, double> TM = calculations->Select();
 	double t = TM.first;
 	double m_rec = TM.second;
 	double com_sqd = (2 * ProtonMassMeV * MeV * E0) + (2 * ProtonMassMeV * MeV * ProtonMassMeV * MeV);
 	double dp = m_rec * m_rec * E / com_sqd;
 
 	ScatterStuff(dp, p, t, E0);
-	p.type() = 4;
 	p.sd() = 1;
 
 	double E3 = (1 + p.dp()) * E0;
@@ -258,12 +286,12 @@ bool SingleDiffractive::Scatter(PSvector& p, double E) const
 }
 
 // ST SD
-void SixTrackSingleDiffractive::Configure(Material* matin, CrossSections* CSin)
-{
-	ScatteringProcess::Configure(matin, CSin);
-	sigma = cs->Get_sig_pn_sd();
-	E0 = cs->Get_E0();
-}
+// deleted RJB void SixTrackSingleDiffractive::Configure(Material* matin, CrossSections* CSin)
+//{
+//	ScatteringProcess::Configure(matin, CSin);
+//	sigma = cs->Get_sig_pn_sd();
+//	E0 = cs->Get_E0();
+//}
 bool SixTrackSingleDiffractive::Scatter(PSvector& p, double E) const
 {
 	double com_sqd = 2 * ProtonMassMeV * MeV * E0;  //ecmsq in SixTrack
@@ -286,7 +314,6 @@ bool SixTrackSingleDiffractive::Scatter(PSvector& p, double E) const
 	double dp = xm2 * E / com_sqd;
 
 	ScatterStuff(dp, p, t, E0);
-	p.type() = 4;
 	p.sd() = 1;
 
 	double E3 = (1 + p.dp()) * E0;
@@ -301,15 +328,14 @@ bool SixTrackSingleDiffractive::Scatter(PSvector& p, double E) const
 }
 
 //Inelastic
-void Inelastic::Configure(Material* matin, CrossSections* CSin)
-{
-	ScatteringProcess::Configure(matin, CSin);
-	sigma = cs->Get_sig_pN_inel();
-	E0 = cs->Get_E0();
-}
+// DELETED RJB void Inelastic::Configure(Material* matin, CrossSections* CSin)
+//{
+//	ScatteringProcess::Configure(matin, CSin);
+//	sigma = cs->Get_sig_pN_inel();
+//	E0 = cs->Get_E0();
+//}
 
 bool Inelastic::Scatter(PSvector& p, double E) const
 {
-	p.type() = 1;
 	return false;
 } // Particle is lost

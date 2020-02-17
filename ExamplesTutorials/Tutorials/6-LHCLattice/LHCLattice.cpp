@@ -25,7 +25,7 @@
 #include "LatticeFunctions.h"
 
 // Include material, collimator and aperture config classes
-#include "MaterialDatabase.h"
+#include "MaterialData.h"
 #include "CollimatorDatabase.h"
 #include "ApertureConfiguration.h"
 
@@ -39,7 +39,7 @@ using namespace ParticleTracking;
 int main()
 {
 	//Define beam energy
-	double beamenergy = 7000*GeV;
+	double beamenergy = 7000 * GeV;
 
 	// Import and construct LHC lattice
 	cout << "Loading MAD lattice file..." << endl;
@@ -49,11 +49,12 @@ int main()
 
 	// Import and define component aperture information
 	cout << "Loading aperture information..." << endl;
-	ApertureConfiguration* apertures = new ApertureConfiguration("ExamplesTutorials/Tutorials/input/LHCbeam1apertureinfo.tfs");
+	ApertureConfiguration* apertures = new ApertureConfiguration(
+		"ExamplesTutorials/Tutorials/input/LHCbeam1apertureinfo.tfs");
 	apertures->ConfigureElementApertures(theModel);
 
 	// Calculate closed orbit
-	ClosedOrbit theClosedOrbit(theModel,beamenergy);
+	ClosedOrbit theClosedOrbit(theModel, beamenergy);
 	Particle particle(0);
 	theClosedOrbit.FindClosedOrbit(particle);
 
@@ -67,11 +68,12 @@ int main()
 
 	// Define material database
 	cout << "Loading materials database..." << endl;
-	MaterialDatabase* material_db = new MaterialDatabase();
+	MaterialData* material_db = new StandardMaterialData();
 
 	// Import and define collimator information
 	cout << "Loading collimators database..." << endl;
-	CollimatorDatabase* collimator_db = new CollimatorDatabase("ExamplesTutorials/Tutorials/input/LHCcollimatorinfo.dat", material_db, true);
+	CollimatorDatabase* collimator_db = new CollimatorDatabase(
+		"ExamplesTutorials/Tutorials/input/LHCcollimatorinfo.dat", material_db, true);
 
 	// Write lattice functions to output file
 	cout << "Writing lattice functions..." << endl;

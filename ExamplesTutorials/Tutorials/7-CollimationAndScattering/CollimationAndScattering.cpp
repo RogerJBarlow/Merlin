@@ -39,7 +39,7 @@
 #include "BunchFilter.h"
 
 // Include collimator classes
-#include "MaterialDatabase.h"
+#include "MaterialData.h"
 #include "CollimatorDatabase.h"
 #include "CollimateProtonProcess.h"
 #include "LossMapCollimationOutput.h"
@@ -88,7 +88,7 @@ int main()
 
 	// Define material database
 	cout << "Loading materials database..." << endl;
-	MaterialDatabase* material_db = new MaterialDatabase();
+	MaterialData* material_db = new StandardMaterialData();
 
 	// Import and define collimator information
 	cout << "Loading collimators database..." << endl;
@@ -186,10 +186,10 @@ int main()
 	string filename = "build/tutorial7.out";
 
 	LossMapCollimationOutput* lossOutput = new LossMapCollimationOutput(tencm);
-	ScatteringModel* scatterModel = new ScatteringModelMerlin;
+// now automatically done RJB 	ScatteringModel* scatterModel = new ScatteringModelMerlin;
 
 	CollimateProtonProcess* collimateProcess = new CollimateProtonProcess(2, 4);
-	collimateProcess->SetScatteringModel(scatterModel);
+// RJB	collimateProcess->SetScatteringModel(scatterModel);
 
 	collimateProcess->ScatterAtCollimator(true);
 	collimateProcess->SetLossThreshold(200.0);
@@ -229,7 +229,7 @@ int main()
 	delete dispersion;
 	delete particleBunch;
 	delete tracker;
-	delete scatterModel;
+	// delete scatterModel;
 	delete collimateProcess;
 	delete col_output;
 

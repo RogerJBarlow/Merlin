@@ -15,8 +15,8 @@
 #include "AcceleratorModel.h"
 #include "Collimator.h"
 #include "BeamData.h"
-#include "Material.h"
-#include "MaterialDatabase.h"
+#include "MaterialProperties.h"
+#include "MaterialData.h"
 #include "LatticeFunctions.h"
 
 using namespace std;
@@ -31,7 +31,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	CollimatorDatabase(string, MaterialDatabase*, bool use_sigma);
+	CollimatorDatabase(string, MaterialData*, bool use_sigma);
 
 	/**
 	 * Collimator setting structure.
@@ -47,7 +47,7 @@ public:
 		double j1_tilt;         ///Collimator jaw 1 tilt
 		double j2_tilt;         ///Collimator jaw 2 tilt
 		double length;          ///Collimator length (m)
-		Material* JawMaterial;  ///Collimator material
+		MaterialProperties* JawMaterial;  ///Collimator material
 		double sigma_x;         ///Jaw x opening in number of sigmas - note that this is not sigma_x it is the sigma in the collimation plane
 		double sigma_y;         ///Jaw y opening in number of sigmas - note that this is not sigma_y it is the sigma in the plane orthogonal to the collimation plane
 		double beta_x;          ///Calculated x beta function at the collimator entrance
@@ -68,7 +68,7 @@ public:
 		double beta_x;          ///Calculated x beta function at the collimator entrance [m]
 		double beta_y;          ///Calculated y beta function at the collimator entrance [m]
 		double half_gap;        ///Collimator half gap [m]
-		string material;        ///Collimator material symbol
+// remolved RJB		string material;        ///Collimator material symbol
 		double length;          ///Collimator length [m]
 		double sig_x;           ///Beam sigma_x value [m]
 		double sig_y;           ///Beam sigma_y value [m]

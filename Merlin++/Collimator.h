@@ -10,7 +10,7 @@
 
 #include "merlin_config.h"
 #include "Drift.h"
-#include "Material.h"
+//    #include "Material.h"
 #include "ScatteringModel.h"
 
 class ComponentTracker;
@@ -28,7 +28,7 @@ public:
 
 	Collimator(const string& id, double len);
 	Collimator(const string& id, double len, double radLength);
-	Collimator(const string& id, double len, Material* pp, double P0);
+	Collimator(const string& id, double len, MaterialProperties* pp, double P0);
 
 	/**
 	 * Returns the length of the collimator in units of its radiation length

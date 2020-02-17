@@ -28,7 +28,7 @@
 #include "ScatteringProcess.h"
 #include "ScatteringModelsMerlin.h"
 #include "CollimatorDatabase.h"
-#include "MaterialDatabase.h"
+#include "MaterialData.h"
 #include "ApertureConfiguration.h"
 #include "Dispersion.h"
 #include "CollimatorAperture.h"
@@ -153,7 +153,10 @@ int main(int argc, char* argv[])
 	double beta = sqrt(1.0 - (1.0 / pow(gamma, 2)));
 	double emittance = normalized_emittance / (gamma * beta);
 
-	MaterialDatabase* mat = new MaterialDatabase();
+	StandardMaterialData* mat = new StandardMaterialData();
+	if(st_scatter)
+		mat->UseSixTrackValues();
+
 	CollimatorDatabase* collimator_db = new CollimatorDatabase(find_data_file("collimator.7.0.sigma"), mat, true);
 
 	//	ACCELERATOR MODEL LOADING
@@ -309,7 +312,10 @@ int main(int argc, char* argv[])
 	filename << "lhc_collimation_test_lossmap_" << npart << ".dat";
 
 	LossMapCollimationOutput* myLossOutput = new LossMapCollimationOutput(tencm);
-	ScatteringModel* myScatter;
+	StandardMaterialData* myMat = new StandardMaterialData();
+	if(st_scatter)
+		myMat->UseSixTrackValues();
+	ScatteringModel* myScatter = new ScatteringModel();
 
 	CollimateProtonProcess* myCollimateProcess;
 
@@ -318,12 +324,14 @@ int main(int argc, char* argv[])
 
 	if(st_scatter)
 	{
-		myScatter = new ScatteringModelSixTrack;
+		myScatter->Processes[1] = new SixTrackRutherford();
+		myScatter->Processes[2] = new SixTrackElasticpn();
+		myScatter->Processes[3] = new SixTrackSingleDiffractive();
 	}
-	else
-	{
-		myScatter = new ScatteringModelMerlin;
-	}
+//	else
+//	{
+//		myScatter = new ScatteringModelMerlin;
+//	}
 
 	myCollimateProcess->SetScatteringModel(myScatter);
 

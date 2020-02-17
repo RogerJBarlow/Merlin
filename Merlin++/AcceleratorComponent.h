@@ -14,9 +14,11 @@
 #include "EMField.h"
 #include "AcceleratorGeometry.h"
 #include "Aperture.h"
-#include "Material.h"
+//#include "Material.h"
+#include "MaterialProperties.h"
 #include "ModelElement.h"
 #include "WakePotentials.h"
+#include "ResistiveWakePotentials.h"
 
 class ComponentTracker;
 
@@ -89,6 +91,7 @@ public:
 	 * @param[in] wp A pointer to a WakePotentials class to associate with this component
 	 */
 	void SetWakePotentials(WakePotentials* wp);
+	void SetResistiveWakePotentials(int modes, double width, double length);
 
 	/**
 	 * Primary tracking interface. Prepares the specified
@@ -160,14 +163,22 @@ public:
 		return Coll_ID;
 	}
 
-	virtual void SetMaterial(Material* mat)
-	{
-		material = mat;
-	}
+///	virtual void SetMaterial(Material* mat)
+///	{
+///		material = mat;
+///	}
 
-	Material* GetMaterial() const
+///	Material* GetMaterial() const
+///	{
+///		return material;
+///	}
+	virtual void SetMaterialProperties(MaterialProperties* matprop)
 	{
-		return material;
+		materialProperties = matprop;
+	}
+	MaterialProperties* GetMaterialProperties()
+	{
+		return materialProperties;
 	}
 
 protected:
@@ -213,7 +224,9 @@ protected:
 	/**
 	 * A pointer to the Material for this component
 	 */
-	Material* material;
+///	Material* material;
+public:
+	MaterialProperties* materialProperties;
 
 	/**
 	 * A pointer to the Wake potentials for this component

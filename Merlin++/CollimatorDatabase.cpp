@@ -25,7 +25,7 @@ using namespace PhysicalUnits;
 
 //Read in file into some sensible structure
 
-CollimatorDatabase::CollimatorDatabase(string input_file, MaterialDatabase* db, bool sigma) :
+CollimatorDatabase::CollimatorDatabase(string input_file, MaterialData* db, bool sigma) :
 	number_collimators(0), use_sigma(sigma), logFlag(false), ErrorLogFlag(false), EnableMatchBeamEnvelope(true),
 	EnableMatchReferenceOrbit(true), JawFlattnessErrors(false), JawAlignmentErrors(false),
 	EnableResistiveCollimatorWakes(false), AngleError(0), PositionError(0)
@@ -86,7 +86,8 @@ CollimatorDatabase::CollimatorDatabase(string input_file, MaterialDatabase* db, 
 			(*input) >> CollData[i].name >> CollData[i].sigma_x >> CollData[i].sigma_y >> CollData[i].tilt >> buf;
 		}
 		//buf contains the material name, must search the material database and check that the appropriate material exists, then adjust the material pointer.
-		CollData[i].JawMaterial = db->FindMaterial(buf);
+//		CollData[i].JawMaterial = db->FindMaterial(buf);
+		CollData[i].JawMaterial = db->property[buf];
 	}
 
 	input->clear();
@@ -123,7 +124,7 @@ void CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model)
 		if(CMapit != CollimatorMap.end())
 		{
 			//cout << "Found: " << (CMapit->second)->GetQualifiedName() << endl;
-			Material* collimator_material = CollData[n].JawMaterial;
+			MaterialProperties* collimator_material = CollData[n].JawMaterial;
 			//Create an aperture for the collimator jaws
 			CollimatorAperture* app = new CollimatorAperture(CollData[n].x_gap, CollData[n].y_gap, CollData[n].tilt,
 				(CMapit->second)->GetLength(), 0, 0);
@@ -135,7 +136,7 @@ void CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model)
 				app->SetExitYOffset(0); //Vertical
 			}
 			(CMapit->second)->SetAperture(app);
-			(CMapit->second)->SetMaterial(collimator_material);
+			(CMapit->second)->SetMaterialProperties(collimator_material);
 		}
 	}
 }
@@ -239,7 +240,7 @@ double CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model, double 
 
 						}
 
-						Material* collimator_material = CollData[i].JawMaterial;
+						MaterialProperties* collimator_material = CollData[i].JawMaterial;
 
 						(CMapit->second)->SetCollID(i + 1);
 
@@ -251,7 +252,7 @@ double CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model, double 
 						fluka_data->beta_x      = beta_x;
 						fluka_data->beta_y      = beta_y;
 						fluka_data->half_gap    = CollData[i].sigma_x * sigma_entrance;
-						fluka_data->material    = collimator_material->GetSymbol();
+						// removed RJB fluka_data->material    = collimator_material->GetSymbol();
 						fluka_data->length      = length;
 						fluka_data->sig_x       = sqrt(emittance_x * beta_x);
 						fluka_data->sig_y       = sqrt(emittance_y * beta_y);
@@ -281,7 +282,7 @@ double CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model, double 
 							app->SetExitYOffset(y_orbit_exit);  //Vertical
 							//Set the aperture for collimation
 							(CMapit->second)->SetAperture(app);
-							(CMapit->second)->SetMaterial(collimator_material);
+							(CMapit->second)->SetMaterialProperties(collimator_material);
 						}
 						else if(!EnableMatchBeamEnvelope && !JawFlattnessErrors && !JawAlignmentErrors)
 						{
@@ -340,7 +341,7 @@ double CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model, double 
 
 								//Set the aperture for collimation
 								(CMapit->second)->SetAperture(app);
-								(CMapit->second)->SetMaterial(collimator_material);
+								(CMapit->second)->SetMaterialProperties(collimator_material);
 							}
 							else if(CollData[i].name == "TCDQA.B4R6.B1")
 							{
@@ -350,7 +351,7 @@ double CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model, double 
 
 								//Set the aperture for collimation
 								(CMapit->second)->SetAperture(app);
-								(CMapit->second)->SetMaterial(collimator_material);
+								(CMapit->second)->SetMaterialProperties(collimator_material);
 							}
 							else if(CollData[i].name == "TCDQA.C4R6.B1")
 							{
@@ -360,7 +361,7 @@ double CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model, double 
 
 								//Set the aperture for collimation
 								(CMapit->second)->SetAperture(app);
-								(CMapit->second)->SetMaterial(collimator_material);
+								(CMapit->second)->SetMaterialProperties(collimator_material);
 							}
 							else
 							{
@@ -369,7 +370,7 @@ double CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model, double 
 
 								//Set the aperture for collimation
 								(CMapit->second)->SetAperture(app);
-								(CMapit->second)->SetMaterial(collimator_material);
+								(CMapit->second)->SetMaterialProperties(collimator_material);
 							}
 							if(logFlag)
 							{
@@ -551,7 +552,7 @@ double CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model, double 
 
 							//Set the aperture for collimation
 							(CMapit->second)->SetAperture(app);
-							(CMapit->second)->SetMaterial(collimator_material);
+							(CMapit->second)->SetMaterialProperties(collimator_material);
 						}
 						else
 						{
@@ -561,7 +562,7 @@ double CollimatorDatabase::ConfigureCollimators(AcceleratorModel* model, double 
 
 						//std::cout << "point7" << std::endl;
 						//Now to set up the resistive wakes
-						double conductivity = collimator_material->GetConductivity();
+						double conductivity = collimator_material->GetExtra("conductivity");
 						double aperture_size = collimator_aperture_width_entrance;
 
 						//Collimation only will take place on one axis
@@ -661,7 +662,7 @@ void CollimatorDatabase::OutputFlukaDatabase(std::ostream* os)
 		(*os) << setw(12) << left << (*its)->beta_x;
 		(*os) << setw(12) << left << (*its)->beta_y;
 		(*os) << setw(12) << left << (*its)->half_gap;
-		(*os) << setw(6) << left << (*its)->material;
+// removed RJB		(*os) << setw(6) << left << (*its)->material;
 		(*os) << setw(12) << left << (*its)->length;
 		(*os) << setw(20) << left << (*its)->sig_x;
 		(*os) << setw(20) << left << (*its)->sig_y;

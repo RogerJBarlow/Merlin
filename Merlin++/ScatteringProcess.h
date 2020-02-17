@@ -15,10 +15,9 @@
 
 #include "PSvector.h"
 
-#include "Material.h"
+#include "MaterialProperties.h"
 #include "DiffractiveScatter.h"
 #include "ElasticScatter.h"
-#include "CrossSections.h"
 
 #include "utils.h"
 #include "PhysicalUnits.h"
@@ -33,6 +32,7 @@
    Created RJB 23 October 2012
    Modified HR 07.09.2015
 
+   Big clean up RJB 3/2/20
  */
 
 namespace Collimation
@@ -42,27 +42,15 @@ class ScatteringProcess
 {
 public:
 	double sigma;           /// Integrated cross section for this process
-
 protected:
 	double E0;              /// Reference energy
-	Material* mat;          /// Material of the collimator being hit
-	CrossSections* cs;      /// CrossSections object holding all configured cross sections
+	MaterialProperties* mat;          /// Material of the collimator being hit
 
 public:
 	virtual ~ScatteringProcess()
 	{
 	}
-	// The first function must be provided for all child classes, and probably the second as well
 	virtual bool Scatter(PSvector& p, double E) const = 0;
-	virtual void Configure(Material* matin, CrossSections* CSin)
-	{
-		mat = matin;
-		cs = CSin;
-	}
-	virtual std::string GetProcessType() const
-	{
-		return "ScatteringProcess";
-	}
 };
 
 /**
@@ -70,26 +58,20 @@ public:
  */
 class Rutherford: public ScatteringProcess
 {
-	double tmin;
+	double tmin = 0.9982E-3; // DeMolaize thesis page 29   [GeV^2];
 public:
-	void Configure(Material* matin, CrossSections* CSin);
 	bool Scatter(PSvector& p, double E) const;
-	std::string GetProcessType() const
+	Rutherford(MaterialProperties* m)
 	{
-		return "Rutherford";
+		mat = m;
 	}
 };
 
 class SixTrackRutherford: public ScatteringProcess
 {
-	double tmin;
+	double tmin = 0.9982E-3; // DeMolaize thesis page 29   [GeV^2];
 public:
-	void Configure(Material* matin, CrossSections* CSin);
 	bool Scatter(PSvector& p, double E) const;
-	std::string GetProcessType() const
-	{
-		return "SixTrackRutherford";
-	}
 };
 
 /**
@@ -98,23 +80,15 @@ public:
 class Elasticpn: public ScatteringProcess
 {
 public:
-	void Configure(Material* matin, CrossSections* CSin);
+	ParticleTracking::ppElasticScatter* calculations;     // point to pomeron etc tables
+	Elasticpn(double Energy);     //ctor added RJB
 	bool Scatter(PSvector& p, double E) const;
-	std::string GetProcessType() const
-	{
-		return "Elastic_pn";
-	}
 };
 
 class SixTrackElasticpn: public ScatteringProcess
 {
 public:
-	void Configure(Material* matin, CrossSections* CSin);
 	bool Scatter(PSvector& p, double E) const;
-	std::string GetProcessType() const
-	{
-		return "SixTrackElasic_pn";
-	}
 };
 
 /**
@@ -124,24 +98,14 @@ class ElasticpN: public ScatteringProcess
 {
 	double b_N; /// slope
 public:
-	void Configure(Material* matin, CrossSections* CSin);
 	bool Scatter(PSvector& p, double E) const;
-	std::string GetProcessType() const
-	{
-		return "Elastic_pN";
-	}
 };
 
 class SixTrackElasticpN: public ScatteringProcess
 {
 	double b_N; /// slope
 public:
-	void Configure(Material* matin, CrossSections* CSin);
 	bool Scatter(PSvector& p, double E) const;
-	std::string GetProcessType() const
-	{
-		return "SixTrackElasic_pN";
-	}
 };
 
 /**
@@ -150,24 +114,16 @@ public:
 class SingleDiffractive: public ScatteringProcess
 {
 public:
-	void Configure(Material* matin, CrossSections* CSin);
+	ParticleTracking::ppDiffractiveScatter* calculations;     // point to Regge stuff
+	SingleDiffractive(double Energy);     //ctor added RJB
 	bool Scatter(PSvector& p, double E) const;
-	std::string GetProcessType() const
-	{
-		return "SingleDiffractive";
-	}
 
 };
 
 class SixTrackSingleDiffractive: public ScatteringProcess
 {
 public:
-	void Configure(Material* matin, CrossSections* CSin);
 	bool Scatter(PSvector& p, double E) const;
-	std::string GetProcessType() const
-	{
-		return "SixTrackSingleDiffractive";
-	}
 
 };
 
@@ -177,12 +133,7 @@ public:
 class Inelastic: public ScatteringProcess
 {
 public:
-	void Configure(Material* matin, CrossSections* CSin);
 	bool Scatter(PSvector& p, double E) const;
-	std::string GetProcessType() const
-	{
-		return "Inelastic";
-	}
 };
 
 } //end namespace Collimation
